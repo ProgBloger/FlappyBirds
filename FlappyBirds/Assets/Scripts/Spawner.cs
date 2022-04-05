@@ -9,6 +9,26 @@ public class Spawner : MonoBehaviour
     [SerializeField] float minHeight = -1f;
     [SerializeField] float maxHeight = 1f;
 
+    public void StopSpawn()
+    {
+        OnDisable();
+    }
+
+    public void StartSpawn()
+    {
+        OnEnable();
+    }
+
+    public void BlowUpPipes()
+    {
+        IEnumerable<Pipes> pipes = FindObjectsOfType<Pipes>();
+
+        foreach (var pipeSet in pipes)
+        {
+            Destroy(pipeSet.gameObject);
+        }
+    }
+
     private void OnEnable()
     {
         InvokeRepeating(nameof(Spawn), spawnRate, spawnRate);

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -6,9 +5,12 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] ScoreManager scoreManager;
     [SerializeField] HighScoreTable highScoreTable;
+    [SerializeField] Spawner spawner;
+    [SerializeField] BombManager bombManager;
     public TMP_Text scoreText;
     public GameObject playButton;
     public GameObject gameOver;
+    public GameObject newScoreSign;
     public Player player;
     private int score;
 
@@ -18,6 +20,7 @@ public class GameManager : MonoBehaviour
         UpdateScores();
 
         Pause(true);
+        SetGameEnterVisible(true);
     }
 
     public void Play()
@@ -25,26 +28,24 @@ public class GameManager : MonoBehaviour
         score = 0;
         scoreText.text = score.ToString();
 
-        UpdateUI(false);
+        SetGameEnterVisible(false);
         Pause(false);
 
-        IEnumerable<Pipes> pipes = FindObjectsOfType<Pipes>();
-
-        foreach (var pipeSet in pipes)
-        {
-            Destroy(pipeSet.gameObject);
-        }
+        spawner.BlowUpPipes();
     }
 
     public void GameOver()
     {
+        bombManager.SetBombInactive();
+        SetGameEnterVisible(true);
+
         var newScoreTable = scoreManager.UpdateScores(score);
+
         if(newScoreTable)
         {
             UpdateScores();
+            newScoreSign.SetActive(true);
         }
-
-        UpdateUI(true);
 
         Pause(true);
     }
@@ -52,6 +53,10 @@ public class GameManager : MonoBehaviour
     public void IncreaseScore()
     {
         score++;
+        if(score % 5 == 0)
+        {
+            bombManager.SetBombActive();
+        }
         scoreText.text = score.ToString();
     }
 
@@ -61,11 +66,12 @@ public class GameManager : MonoBehaviour
         highScoreTable.ShowScores(scores);
     }
 
-    private void UpdateUI(bool turnOn)
+    private void SetGameEnterVisible(bool turnOn)
     {
         playButton.SetActive(turnOn);
         gameOver.SetActive(turnOn);
         highScoreTable.gameObject.SetActive(turnOn);
+        newScoreSign.SetActive(false);
     }
 
     private void Pause(bool setPause)
