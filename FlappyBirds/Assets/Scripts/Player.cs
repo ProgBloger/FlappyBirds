@@ -8,12 +8,14 @@ public class Player : MonoBehaviour
     public float gravity = -9.8f;
     public float strength = 5f;
     private SpriteRenderer spriteRenderer;
+    private GameManager gameManager;
     public Sprite[] sprites;
     private int spriteIndex;
 
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        gameManager = FindObjectOfType<GameManager>();
     }
 
     void Start()
@@ -25,7 +27,7 @@ public class Player : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
         {
-            direction = Vector3.up * strength;
+            UpImpulse();
         }
 
         if(Input.touchCount > 0)
@@ -33,12 +35,17 @@ public class Player : MonoBehaviour
             Touch touch = Input.GetTouch(0);
             if(touch.phase == TouchPhase.Began)
             {
-                direction = Vector3.up * strength;
+                UpImpulse();
             }
         }
 
         direction.y += gravity * Time.deltaTime;
         transform.position += direction * Time.deltaTime;
+    }
+
+    private void UpImpulse()
+    {
+        direction = Vector3.up * strength;
     }
 
     private void AnimateSprite()
@@ -54,14 +61,13 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Collider");
         if(other.gameObject.tag == "Obstacle")
         {
-            FindObjectOfType<GameManager>().GameOver();
+            gameManager.GameOver();
         }
         else if (other.gameObject.tag == "Scoring")
         {
-            FindObjectOfType<GameManager>().IncreaseScore();
+            gameManager.IncreaseScore();
         }
     }
 

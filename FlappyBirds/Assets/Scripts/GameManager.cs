@@ -1,35 +1,32 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; 
 using TMPro;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] ScoreManager scoreManager;
+    [SerializeField] HighScoreTable highScoreTable;
     public TMP_Text scoreText;
     public GameObject playButton;
     public GameObject gameOver;
     public Player player;
     private int score;
 
-    private void Awake()
+    private void Start()
     {
         Application.targetFrameRate = 60;
+        UpdateScores();
 
-        Pause();
+        Pause(true);
     }
 
     public void Play()
     {
-
         score = 0;
         scoreText.text = score.ToString();
 
-        playButton.SetActive(false);
-        gameOver.SetActive(false);
-
-        Time.timeScale = 1f;
-        player.enabled = true;
+        UpdateUI(false);
+        Pause(false);
 
         IEnumerable<Pipes> pipes = FindObjectsOfType<Pipes>();
 
@@ -39,23 +36,41 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void Pause()
-    {
-        Time.timeScale = 0f;
-        player.enabled = false;
-    }
-
     public void GameOver()
     {
-        gameOver.SetActive(true);
-        playButton.SetActive(true);
+        var newScoreTable = scoreManager.UpdateScores(score);
+        if(newScoreTable)
+        {
+            UpdateScores();
+        }
 
-        Pause();
+        UpdateUI(true);
+
+        Pause(true);
     }
 
     public void IncreaseScore()
     {
         score++;
         scoreText.text = score.ToString();
+    }
+
+    private void UpdateScores()
+    {
+        var scores = scoreManager.GetScores();
+        highScoreTable.ShowScores(scores);
+    }
+
+    private void UpdateUI(bool turnOn)
+    {
+        playButton.SetActive(turnOn);
+        gameOver.SetActive(turnOn);
+        highScoreTable.gameObject.SetActive(turnOn);
+    }
+
+    private void Pause(bool setPause)
+    {
+        Time.timeScale = setPause ? 0f : 1f;
+        player.enabled = !setPause;
     }
 }
